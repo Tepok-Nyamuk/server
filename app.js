@@ -43,7 +43,8 @@ io.on('connection', function(socket) {
 
             if(room_length.length >= jumlahPlayer) {
                 
-                setInterval( function() {                    
+                setInterval( function() {          
+                    console.log('test')          
                     // io.sockets.in(room).emit('event', data);
                     io.sockets.in(data).emit('dari-server', randomCoordinate())
                 }, 2000)
