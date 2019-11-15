@@ -29,10 +29,36 @@ io.on('connection', function(socket) {
             
         //   });
         socket.on('join', function(data) {
+            let jumlahPlayer = 0
+            for(let i =0; i<roomList.length; i++){
+                if(roomList[i].name === data){
+                    jumlahPlayer = roomList[i].jumlahPlayer
+                }
+            }
+
             socket.join(data);
             console.log('32', data)
             const room_length = io.sockets.adapter.rooms[data]            
             console.log('room', room_length.length)
+
+            if(room_length.length >= jumlahPlayer) {
+                
+                setInterval( function() {                    
+                    // io.sockets.in(room).emit('event', data);
+                    io.sockets.in(data).emit('dari-server', randomCoordinate())
+                }, 2000)
+
+                //io.sockets.in(room).emit('event', data);
+                console.log('roomnya', data)
+                socket.in(data).on('send-score', function(score) {    
+                    console.log('masuk room', data)
+                    io.sockets.in(data).emit('all-score', {room: data, message: {username, score}})
+                    console.log(score, username)
+                })
+            } else {
+                console.log('kirim send loading')
+                io.sockets.in(data).emit('send-loading', 'loading')
+            }
         })
 
         socket.emit('send-roomList', roomList)
@@ -41,7 +67,10 @@ io.on('connection', function(socket) {
             let playerCount = request.player
 
             socket.join(room)
-            roomList.push(room)            
+            roomList.push({
+                name: room,
+                jumlahPlayer: Number(playerCount)
+            })            
             const room_length = io.sockets.adapter.rooms[room]            
             console.log('room', room_length.length)
             let jumlahPlayer = room_length.length;
