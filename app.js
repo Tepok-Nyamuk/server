@@ -3,7 +3,14 @@ const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 
+const randomCoordinate = () => {
+    let xAxis = Math.floor(Math.random() * (800 - 1)) + 1;
+    let yAxis = Math.floor(Math.random() * (1400 - 1)) + 1;
+    let result = {xAxis, yAxis}
+    // test
 
+    return result
+}
 
 //mendengarkan semua yang connect
 io.on('connection', function(socket) {
@@ -15,10 +22,11 @@ io.on('connection', function(socket) {
 
         // data kita terima langsung kirim kembali ke semua user
         // io.emit('dari-server', username)
-        // setInterval( function() {
-        //     // io.sockets.in(room).emit('event', data);
-        //     io.emit('dari-server', 'username')
-        // }, 3000)
+        setInterval( function() {
+            ;
+            // io.sockets.in(room).emit('event', data);
+            io.emit('dari-server', randomCoordinate())
+        }, 1000)
         // socket.on('create', function (room) {
         //     socket.join(room);            
             
