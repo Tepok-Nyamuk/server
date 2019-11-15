@@ -3,7 +3,16 @@ const app = express()
 const http = require('http').createServer(app)
 const io = require('socket.io')(http)
 
+let roomList = []
 
+const randomCoordinate = () => {
+    let xAxis = Math.floor(Math.random() * (775 - 1)) + 1;
+    let yAxis = Math.floor(Math.random() * (275 - 1)) + 1;
+    let result = {xAxis, yAxis}
+    // test
+
+    return result
+}
 
 //mendengarkan semua yang connect
 io.on('connection', function(socket) {
@@ -14,34 +23,50 @@ io.on('connection', function(socket) {
         console.log(username)
 
         // data kita terima langsung kirim kembali ke semua user
-        // io.emit('dari-server', username)
-        // setInterval( function() {
-        //     // io.sockets.in(room).emit('event', data);
-        //     io.emit('dari-server', 'username')
-        // }, 3000)
+        // io.emit('dari-server', username)        
         // socket.on('create', function (room) {
         //     socket.join(room);            
             
         //   });
+        socket.on('join', function(data) {
+            socket.join(data);
+            console.log('32', data)
+            const room_length = io.sockets.adapter.rooms[data]            
+            console.log('room', room_length.length)
+        })
 
-        socket.on('create', function(room) {
-            socket.join(room);
-            //io.sockets.in(room).emit('event', data);
-            console.log('roomnya', room)
-            socket.in(room).on('send-score', function(score) {
-                console.log('32')
-                console.log('masuk room', room)
-                io.sockets.in(room).emit('all-score', {room: room, message: {username, score}})
-                console.log(score, username)
-            })
+        socket.emit('send-roomList', roomList)
+        socket.on('create', function(request) {
+            let room = request.name
+            let playerCount = request.player
+
+            socket.join(room)
+            roomList.push(room)            
+            const room_length = io.sockets.adapter.rooms[room]            
+            console.log('room', room_length.length)
+            let jumlahPlayer = room_length.length;
+            console.log(playerCount)
+
+            if(jumlahPlayer >= playerCount) {
+                
+                setInterval( function() {                    
+                    // io.sockets.in(room).emit('event', data);
+                    io.sockets.in(room).emit('dari-server', randomCoordinate())
+                }, 2000)
+
+                //io.sockets.in(room).emit('event', data);
+                console.log('roomnya', room)
+                socket.in(room).on('send-score', function(score) {    
+                    console.log('masuk room', room)
+                    io.sockets.in(room).emit('all-score', {room: room, message: {username, score}})
+                    console.log(score, username)
+                })
+            } else {
+                console.log('kirim send loading')
+                io.sockets.in(room).emit('send-loading', 'loading')
+            }
           }
-        );
-        // socket.on('send-score', function(score) {
-        //     io.emit('all-score', {username, score})
-        //     console.log(score, username)
-        // })
-        
-        
+        );      
     })
 
     socket.on('send-message', function(message) {
